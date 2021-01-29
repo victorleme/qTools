@@ -7,6 +7,7 @@ import css from "rollup-plugin-css-only";
 import sveltePreprocess from "svelte-preprocess";
 import autoPreprocess from "svelte-preprocess";
 import typescript from "@rollup/plugin-typescript";
+import dsv from "@rollup/plugin-dsv";
 const production = !process.env.ROLLUP_WATCH;
 
 function serve() {
@@ -43,6 +44,7 @@ export default {
     file: "public/build/bundle.js",
   },
   plugins: [
+    dsv(),
     svelte({
       preprocess: autoPreprocess(),
       compilerOptions: {
