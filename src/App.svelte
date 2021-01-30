@@ -1,11 +1,21 @@
 <script lang="ts">
   import Graph from "./Graph.svelte";
+  import { textToCSV } from "./data/data.utils";
+  const url =
+    "https://static.anychart.com/git-storage/word-press/data/candlestick-chart-tutorial/EUR_USDHistoricalData2year.csv";
   export let name;
   let num: number = 0;
-  let stocks = ["PETR4", "ITUB4", "GGBR4"];
+  let stocks = ["PETR4"];
   const addNumber = (i: number) => {
     num = num + i;
   };
+  let data = [];
+  fetch(url).then(async (response) => {
+    if (response.ok) {
+      const text = await response.text();
+      data = [...(await textToCSV(text))];
+    }
+  });
   type TodoType = {
     id: number;
     name: string;
@@ -14,14 +24,12 @@
 </script>
 
 <main>
-  <h1>qTools</h1>
-  <p>Quantum Finance Analytics App</p>
   <div class="stock-grid">
     {#each stocks as stock}
       <div>
         <div class="graph-title">{stock}</div>
         <div class="graph">
-          <Graph />
+          <Graph {data} />
         </div>
       </div>
     {/each}
@@ -30,8 +38,9 @@
 
 <style>
   .stock-grid {
+    padding: 1rem 1rem;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr;
     grid-column-gap: 0.5rem;
   }
   .graph-title {
@@ -41,7 +50,7 @@
     justify-content: center;
   }
   .graph {
-    cursor: pointer;
+    cursor: crosshair;
     height: 30rem;
     width: 100%;
   }
@@ -57,6 +66,7 @@
     text-transform: uppercase;
     font-size: 4em;
     font-weight: 100;
+    margin: 0;
   }
 
   @media (min-width: 640px) {

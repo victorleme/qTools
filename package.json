@@ -24,6 +24,9 @@
   "dependencies": {
     "@rollup/plugin-dsv": "^2.0.1",
     "@rollup/plugin-typescript": "^8.1.0",
+    "d3": "^6.5.0",
+    "date-fns": "^2.16.1",
+    "moment": "^2.29.1",
     "sirv-cli": "^1.0.0"
   }
 }
