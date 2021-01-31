@@ -20,6 +20,5 @@
     display: grid;
     height: 100%;
     grid-row-gap: 0.1rem;
-    grid-template-rows: 2fr 1fr;
   }
 </style>

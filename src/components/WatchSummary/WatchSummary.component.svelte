@@ -18,4 +18,8 @@
       background-color: #f0f3fa;
     }
   }
+  h2 {
+    margin: 0;
+    transform: translateY(-100%);
+  }
 </style>

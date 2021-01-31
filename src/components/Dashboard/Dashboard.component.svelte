@@ -21,7 +21,7 @@
     display: grid;
     height: 100%;
     width: 100%;
-    grid-column-gap: 0.1rem;
+    grid-column-gap: 0.2rem;
     grid-template-columns: min-content 7fr 2fr;
   }
 </style>

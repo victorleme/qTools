@@ -13,7 +13,7 @@
 
 <style lang="scss">
   .graph-chart {
-    height: 40rem;
+    height: 30rem;
     background-color: white;
   }
   .asset-label {
