@@ -4,6 +4,7 @@
   import Graph from "../Graph/Graph.component.svelte";
 </script>
 
+<svelte:body on:contextmenu|preventDefault={() => {}} />
 <div class="main-grid">
   <div class="toolbar">
     <Toolbar />
