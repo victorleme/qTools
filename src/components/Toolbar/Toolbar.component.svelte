@@ -1,5 +1,5 @@
 <script>
-  const items = Array(10).fill("O");
+  const items = Array(140).fill("O");
 </script>
 
 <div class="toolbar-grid">
@@ -27,6 +27,7 @@
   }
   .toolbar-grid {
     background-color: white;
+    height: 100%;
   }
   .main-grid {
     display: grid;

@@ -1,10 +1,13 @@
 import * as d3 from "d3";
 import moment from "moment";
-export const parseDate = d3.timeParse("%b %d, %Y");
+export const parseDate = d3.utcParse("%m-%d-%Y");
 export const textToCSV = async (text) => {
   return d3
     .csvParse(text, (d) => {
-      const date = parseDate(d["Date"]);
+      const date = new Date(
+        moment(d["Date"], "MMM DD, YYYY").format("YYYY-MM-DD")
+      );
+
       return {
         date,
         high: +d["High"],

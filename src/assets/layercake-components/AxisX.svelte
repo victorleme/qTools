@@ -1,7 +1,9 @@
 <script>
   import { getContext } from "svelte";
 
-  const { width, height, xScale, yScale, yRange } = getContext("LayerCake");
+  const { width, height, xScale, yScale, yRange, data } = getContext(
+    "LayerCake"
+  );
 
   export let gridlines = true;
   export let formatTick = (d) => d;
@@ -20,7 +22,7 @@
     : isBandwidth
     ? $xScale.domain()
     : $xScale.ticks(ticks);
-
+  $: console.log(tickVals, $xScale.ticks(ticks));
   function textAnchor(i) {
     if (snapTicks === true) {
       if (i === 0) {
@@ -48,7 +50,7 @@
         y={yTick}
         dx={dxTick}
         dy={dyTick}
-        text-anchor={textAnchor(i)}>{formatTick(tick)}</text
+        text-anchor={textAnchor(i)}>{formatTick(tick, i)}</text
       >
     </g>
   {/each}

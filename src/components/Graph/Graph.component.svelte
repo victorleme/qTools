@@ -1,5 +1,5 @@
 <script>
-  import Chart from "../Chart/Chart.component.svelte";
+  import CandlestickChart from "../CandlestickChart/CandlestickChart.component.svelte";
 </script>
 
 <div class="graph-grid">
@@ -7,7 +7,7 @@
     <div class="asset-label">ES12!</div>
   </div>
   <div class="graph-chart">
-    <Chart />
+    <CandlestickChart />
   </div>
 </div>
 
@@ -17,6 +17,7 @@
     background-color: white;
   }
   .asset-label {
+    display: inline-block;
     font-size: 1.5rem;
     padding: 1rem 1rem;
     &:hover {

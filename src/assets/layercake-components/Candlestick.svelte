@@ -5,14 +5,7 @@
   const { data, xGet, yGet, xScale, yScale } = getContext("LayerCake");
   const dispatch = createEventDispatcher();
 
-  data.subscribe((data) => {
-    if (data.length > 0) {
-      data.map((d) => {
-        let obj = { ...d };
-        //  console.log($xScale(d.date), $yScale(d.open), $yScale(d.close));
-      });
-    }
-  });
+  data.subscribe((data) => {});
   function handleMousemove(d) {
     return function handleMousemoveFn(e) {
       raise(this);
@@ -22,7 +15,6 @@
       }
     };
   }
-  export let fill = "#00bbff";
 </script>
 
 <g class="bar-group" on:mouseout={(e) => dispatch("mouseout")}>

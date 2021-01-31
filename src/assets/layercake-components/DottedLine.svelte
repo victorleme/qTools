@@ -3,11 +3,10 @@
 
   const { data, xGet, yGet } = getContext("LayerCake");
 
-  export let stroke = "#ab00d6";
   export let evt = null;
   export let width = 0;
   export let height = 0;
-  $: evt && console.log(evt.offsetX, evt.offsetY, width);
+
   $: centerX = evt ? evt.offsetX : 0;
   $: centerY = evt ? evt.offsetY : 0;
 </script>
@@ -32,10 +31,4 @@
 />
 
 <style>
-  .path-line {
-    fill: none;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-    stroke-width: 2;
-  }
 </style>
