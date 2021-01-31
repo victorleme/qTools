@@ -4,7 +4,7 @@
 
 <div class="graph-grid">
   <div class="graph-toolbar">
-    <div class="asset-label">ES1!</div>
+    <div class="asset-label">ES12!</div>
   </div>
   <div class="graph-chart">
     <Chart />
