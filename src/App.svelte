@@ -1,64 +1,33 @@
 <script lang="ts">
-  import Graph from "./Graph.svelte";
   import { textToCSV } from "./data/data.utils";
-  const url =
-    "https://static.anychart.com/git-storage/word-press/data/candlestick-chart-tutorial/EUR_USDHistoricalData2year.csv";
-  export let name;
-  let num: number = 0;
-  let stocks = ["PETR4"];
-  const addNumber = (i: number) => {
-    num = num + i;
-  };
-  let data = [];
-  fetch(url).then(async (response) => {
-    if (response.ok) {
-      const text = await response.text();
-      data = [...(await textToCSV(text))];
-    }
-  });
-  type TodoType = {
-    id: number;
-    name: string;
-    completed: boolean;
-  };
+  import Dashboard from "./components/Dashboard/Dashboard.component.svelte";
+  // const url =
+  //   "https://static.anychart.com/git-storage/word-press/data/candlestick-chart-tutorial/EUR_USDHistoricalData2year.csv";
+  // export let name;
+  // let num: number = 0;
+  // let stocks = ["PETR4"];
+  // const addNumber = (i: number) => {
+  //   num = num + i;
+  // };
+  // let data = [];
+  // fetch(url).then(async (response) => {
+  //   if (response.ok) {
+  //     const text = await response.text();
+  //     data = [...(await textToCSV(text))];
+  //   }
+  // });
 </script>
 
 <main>
-  <div class="stock-grid">
-    {#each stocks as stock}
-      <div>
-        <div class="graph-title">{stock}</div>
-        <div class="graph">
-          <Graph {data} />
-        </div>
-      </div>
-    {/each}
-  </div>
+  <Dashboard />
 </main>
 
 <style>
-  .stock-grid {
-    padding: 1rem 1rem;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-column-gap: 0.5rem;
-  }
-  .graph-title {
-    margin: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .graph {
-    cursor: crosshair;
-    height: 30rem;
-    width: 100%;
-  }
   main {
-    text-align: center;
-    padding: 1em;
-    max-width: 240px;
-    margin: 0 auto;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    background-color: #e0e3eb;
   }
 
   h1 {

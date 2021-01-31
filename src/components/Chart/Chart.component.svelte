@@ -1,19 +1,30 @@
-<script>
+<script lang="ts">
   import { LayerCake, Svg, Html } from "layercake";
   import * as d3 from "d3";
 
   import { sub, add } from "date-fns";
-  import AxisX from "./assets/layercake-components/AxisX.svelte";
-  import AxisY from "./assets/layercake-components/AxisY.svelte";
-  import Tooltip from "./assets/layercake-components/Tooltip.svelte";
-  import Bar from "./assets/layercake-components/Bar.svelte";
+  import AxisX from "./../../assets/layercake-components/AxisX.svelte";
+  import AxisY from "./../../assets/layercake-components/AxisY.svelte";
+  import Tooltip from "./../../assets/layercake-components/Tooltip.svelte";
 
   // This example loads csv data as json using @rollup/plugin-dsv
   export let data = [];
   let margin = { top: 0, bottom: 20, left: 30 };
-  import Candlestick from "./assets/layercake-components/Candlestick.svelte";
-  import DottedLine from "./assets/layercake-components/DottedLine.svelte";
+  import Candlestick from "./../../assets/layercake-components/Candlestick.svelte";
+  import { textToCSV } from "../../data/data.utils";
 
+  const url =
+    "https://static.anychart.com/git-storage/word-press/data/candlestick-chart-tutorial/EUR_USDHistoricalData2year.csv";
+  export let name;
+  let num: number = 0;
+  let stocks = ["PETR4"];
+
+  fetch(url).then(async (response) => {
+    if (response.ok) {
+      const text = await response.text();
+      data = [...(await textToCSV(text))];
+    }
+  });
   let chartContainerEl;
   let width, height;
   data.forEach((d) => {
@@ -75,6 +86,8 @@
     console.log(xDomain);
     //xDomain = [...[xDomain[0].setMonth(xDomain[0].getMonth() - 1), xDomain[1]]];
   };
+  let svgEl = null;
+  $: console.log(svgEl);
 </script>
 
 <div
@@ -95,21 +108,16 @@
     {data}
   >
     <!-- <Svg>
-      <AxisX />
-      <AxisY ticks={4} />
-      <Line stroke={"#ff3e00"} />
-      <Area fill={"rgba(255, 62, 0, 0.2)"} />
-    </Svg> -->
-    <Svg>
+        <AxisX />
+        <AxisY ticks={4} />
+        <Line stroke={"#ff3e00"} />
+        <Area fill={"rgba(255, 62, 0, 0.2)"} />
+      </Svg> -->
+    <Svg zIndex={1}>
       <Candlestick
         on:mousemove={(event) => (evt = hideTooltip = event)}
         on:mouseout={() => (hideTooltip = true)}
       />
-      <AxisX
-        formatTick={(d) => `${d.getDate()} / ${d.getMonth()}`}
-        class="time-x-axis"
-      />
-      <AxisY />
     </Svg>
     <Html pointerEvents={false}>
       {#if hideTooltip !== true}
@@ -120,6 +128,10 @@
         </Tooltip>
       {/if}
     </Html>
+    <Svg>
+      <AxisX formatTick={(d) => `${d.getDate()} / ${d.getMonth()}`} />
+      <AxisY />
+    </Svg>
   </LayerCake>
 </div>
 
@@ -128,9 +140,8 @@
     cursor: n-resize;
   }
   .chart-container {
+    overflow: hidden;
     width: 100%;
     height: 100%;
-    border-color: black;
-    border: 1px solid;
   }
 </style>
