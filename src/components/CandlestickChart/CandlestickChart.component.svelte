@@ -8,11 +8,25 @@
   import AxisY from "../../assets/layercake-components/AxisY.svelte";
   import Tooltip from "../../assets/layercake-components/Tooltip.svelte";
   import DottedLine from "../../assets/layercake-components/DottedLine.svelte";
+  import Scatter from "../../assets/layercake-components/Scatter.svg.svelte";
   // This example loads csv data as json using @rollup/plugin-dsv
   export let data = [];
 
   import Candlestick from "../../assets/layercake-components/Candlestick.svelte";
   import { textToCSV } from "../../data/data.utils";
+  import RandomIndicator from "../../assets/layercake-components/RandomIndicator.svg.svelte";
+  let isDragging = false;
+  //Layers: Pontos,
+
+  //Indicadores: Volume, MACD
+
+  //Canvas & SVG
+
+  // Detalhar o movimento do índice
+
+  // Raio - x:
+
+  // Desenhar Régua:
 
   const url =
     "https://static.anychart.com/git-storage/word-press/data/candlestick-chart-tutorial/EUR_USDHistoricalData2year.csv";
@@ -77,6 +91,7 @@
     //xDomain = [...[xDomain[0].setMonth(xDomain[0].getMonth() - 1), xDomain[1]]];
   };
   const onPanMove = ({ detail = { dx: 0, dy: 0 } }) => {
+    isDragging = true;
     const { dx, dy } = detail;
     const [minDate, maxDate] = [...xDomain];
     const newMinDate =
@@ -86,7 +101,9 @@
 
     xDomain = [...[newMinDate, newMaxDate]];
   };
-
+  const onPanEnd = () => {
+    isDragging = false;
+  };
   const logEvent = (e) => console.log(e.type, e.detail);
   const formatTickX = (d) => {
     const isFirstDay = isFirstDayOfMonth(d);
@@ -101,6 +118,7 @@
 
 <div
   class="chart-container"
+  class:hand-cursor={isDragging}
   bind:clientWidth={width}
   bind:clientHeight={height}
   bind:this={chartContainerEl}
@@ -108,7 +126,7 @@
   use:dragChart
   on:panstart={logEvent}
   on:panmove={onPanMove}
-  on:panend={logEvent}
+  on:panend={onPanEnd}
   on:click={check}
   on:mousemove={(evt) => (evtMouseDotted = evt)}
 >
@@ -134,6 +152,9 @@
         on:mouseout={() => (hideTooltip = true)}
       />
     </Svg>
+    <Svg>
+      <RandomIndicator />
+    </Svg>
     <Html pointerEvents={false}>
       {#if hideTooltip !== true}
         <Tooltip {evt} let:detail>
@@ -153,6 +174,9 @@
 </div>
 
 <style>
+  .hand-cursor {
+    cursor: grabbing !important;
+  }
   .time-x-axis {
     cursor: n-resize;
   }
