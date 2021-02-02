@@ -28,17 +28,10 @@
 
   // Desenhar Régua:
 
-  const url =
-    "https://static.anychart.com/git-storage/word-press/data/candlestick-chart-tutorial/EUR_USDHistoricalData2year.csv";
-
-  fetch(url).then(async (response) => {
-    if (response.ok) {
-      const text = await response.text();
-      data = [...(await textToCSV(text))];
-    }
-  });
   let chartContainerEl;
   let width, height;
+  const xKey = "date";
+  const yKey = "high";
   data.forEach((d) => {
     d[yKey] = +d[yKey];
   });
@@ -62,9 +55,18 @@
         })
       : [];
   $: yRange = [];
-  $: teste = data.length > 0 ? d3.scaleLinear().domain(yDomain).ticks() : [];
-  const xKey = "date";
-  const yKey = "high";
+  $: console.log("yDomain", yDomain);
+  const resizeDomain = ({ axis = "Y", key = "", min = 0, max = Infinity }) => {
+    const _data = [...data].filter((d) => {
+      return d[key] > min && d[key] < max;
+    });
+    if (axis === "Y" && _data.length > 0) {
+      yDomain = [
+        ...[d3.min(_data, (d) => d.low), d3.max(_data, (d) => d.high)],
+      ];
+      console.log([d3.min(_data, (d) => d.low), d3.max(_data, (d) => d.high)]);
+    }
+  };
 
   let evt;
   let evtMouseDotted = evt;
@@ -87,7 +89,7 @@
       xDomain = [...[newMinDate, xDomain[1]]];
     }
 
-    console.log(xDomain);
+    resizeDomain({ axis: "Y", key: "date", min: xDomain[0], max: xDomain[1] });
     //xDomain = [...[xDomain[0].setMonth(xDomain[0].getMonth() - 1), xDomain[1]]];
   };
   const onPanMove = ({ detail = { dx: 0, dy: 0 } }) => {
@@ -100,6 +102,7 @@
       dx < 0 ? add(maxDate, { days: 3 }) : sub(maxDate, { days: 3 });
 
     xDomain = [...[newMinDate, newMaxDate]];
+    resizeDomain({ axis: "Y", key: "date", min: xDomain[0], max: xDomain[1] });
   };
   const onPanEnd = () => {
     isDragging = false;
@@ -134,6 +137,7 @@
     padding={{ right: 50 }}
     x={xKey}
     y={yKey}
+    yScale={d3.scaleLinear()}
     xScale={d3.scaleTime()}
     xRange={[0, width - 50]}
     {xDomain}
@@ -182,7 +186,6 @@
   }
   .chart-container {
     cursor: crosshair;
-    padding-bottom: 1.5rem;
     overflow: hidden;
     width: 100%;
     height: 100%;

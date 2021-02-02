@@ -22,7 +22,7 @@
     : isBandwidth
     ? $xScale.domain()
     : $xScale.ticks(ticks);
-  $: console.log(tickVals, $xScale.ticks(ticks));
+
   function textAnchor(i) {
     if (snapTicks === true) {
       if (i === 0) {
@@ -69,6 +69,7 @@
   .axis {
     cursor: ew-resize;
     user-select: none;
+    transform: translateY(-5%);
   }
   .tick {
     font-size: 0.725em;
