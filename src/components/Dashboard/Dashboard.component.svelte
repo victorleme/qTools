@@ -25,4 +25,7 @@
     grid-column-gap: 0.2rem;
     grid-template-columns: min-content 7fr 2fr;
   }
+  .graph {
+    height: 99vh;
+  }
 </style>

@@ -19,29 +19,31 @@
 
 <g class="bar-group" on:mouseout={(e) => dispatch("mouseout")}>
   {#each $data as d, i}
-    <g
-      on:mouseover={(e) => dispatch("mousemove", { e, props: d })}
-      on:mousemove={handleMousemove(d)}
-    >
-      <line
-        y1={$yScale(d.low)}
-        stroke={"black"}
-        y2={$yScale(d.high)}
-        style="stroke-width:1"
-        transform={`translate(${$xScale(d.date)},0)`}
-      />
-      <line
-        y1={$yScale(d.open)}
-        y2={$yScale(d.close)}
-        stroke={d.open > d.close
-          ? d3.schemeSet1[0]
-          : d.close > d.open
-          ? d3.schemeSet1[2]
-          : d3.schemeSet1[8]}
-        style="stroke-width:5"
-        transform={`translate(${$xScale(d.date)},0)`}
-      />
-    </g>
+    {#if $xScale(d.date)}
+      <g
+        on:mouseover={(e) => dispatch("mousemove", { e, props: d })}
+        on:mousemove={handleMousemove(d)}
+      >
+        <line
+          y1={$yScale(d.low)}
+          stroke={"black"}
+          y2={$yScale(d.high)}
+          style="stroke-width:1"
+          transform={`translate(${$xScale(d.date)},0)`}
+        />
+        <line
+          y1={$yScale(d.open)}
+          y2={$yScale(d.close)}
+          stroke={d.open > d.close
+            ? d3.schemeSet1[0]
+            : d.close > d.open
+            ? d3.schemeSet1[2]
+            : d3.schemeSet1[8]}
+          style="stroke-width:5"
+          transform={`translate(${$xScale(d.date)},0)`}
+        />
+      </g>
+    {/if}
   {/each}
 </g>
 

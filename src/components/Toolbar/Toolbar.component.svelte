@@ -19,7 +19,7 @@
   }
   .item {
     cursor: default;
-    padding: 1rem 1rem;
+    padding: 1.5rem 1.5rem;
     font-size: 1.5rem;
     &:hover {
       background-color: #f0f3fa;

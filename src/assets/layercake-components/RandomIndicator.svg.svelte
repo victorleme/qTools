@@ -13,7 +13,7 @@
 
 <g class="scatter-group">
   {#each $data as d, i}
-    {#if i % 5 === 0}
+    {#if i % 5 === 0 && $xGet(d)}
       <circle
         cx={$xGet(d) + (typeof dx === "function" ? dx($xScale) : dx) + 30}
         cy={$yGet(d) + (typeof dy === "function" ? dy($yScale) : dy) - 50}

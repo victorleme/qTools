@@ -6,16 +6,29 @@
   import { sub, add, format, isFirstDayOfMonth } from "date-fns";
   import AxisX from "../../assets/layercake-components/AxisX.svelte";
   import AxisY from "../../assets/layercake-components/AxisY.svelte";
-  import Tooltip from "../../assets/layercake-components/Tooltip.svelte";
-  import DottedLine from "../../assets/layercake-components/DottedLine.svelte";
   import Volume from "../../assets/layercake-components/Volume.svelte";
-  import { chartStore } from "../../store/chart/chart.store";
   // This example loads csv data as json using @rollup/plugin-dsv
+  import { chartStore } from "../../store/chart/chart.store";
+  let width = 0,
+    height = 0;
+  let ticks = [];
+  let xDomainBar = [];
+  let xDomain = [];
+  chartStore.subscribe((store) => {
+    const data = store.data;
+    const xDomainStore = store.xDomain;
+    console.log(store);
+    if (data.length > 0 && xDomainStore.length > 0) {
+      ticks = d3.utcMonday.range(xDomainStore[0], +xDomainStore[1] + 1);
+      xDomainBar = ticks.map((tick) => {
+        return format(tick, "dd/MM/yyyy");
+      });
+      xDomain = [...[xDomainStore[0], xDomainStore[1]]];
+      console.log(xDomain);
+    }
+  });
   export let data = [];
 
-  import Candlestick from "../../assets/layercake-components/Candlestick.svelte";
-  import { textToCSV } from "../../data/data.utils";
-  import RandomIndicator from "../../assets/layercake-components/RandomIndicator.svg.svelte";
   let isDragging = false;
   //Layers: Pontos,
 
@@ -30,12 +43,15 @@
   // Desenhar Régua:
   let padding = { left: 25, bottom: 25, right: 50 };
   let chartContainerEl;
-  let width, height;
+
   const xKey = "date";
-  const yKey = "high";
-  data.forEach((d) => {
-    d[yKey] = +d[yKey];
-  });
+  const yKey = "volume";
+
+  $: {
+    data.forEach((d) => {
+      d[yKey] = +d[yKey];
+    });
+  }
   $: [minDate, maxDate] =
     data.length > 0
       ? d3.extent(data, function (d) {
@@ -45,32 +61,23 @@
 
   $: yDomain =
     data.length > 0
-      ? [d3.min(data, (d) => d.low), d3.max(data, (d) => d.high)]
+      ? [d3.min(data, (d) => d.volume), d3.max(data, (d) => d.volume)]
       : [0, 1];
-  //[d3.min(data, (d) => d.low), d3.max(data, (d) => d.high)]
-  $: xDomain =
-    data.length > 0
-      ? d3.extent(data, function (d) {
-          return d.date;
-        })
-      : [];
-  $: yRange = [];
-  $: chartStore.setXDomain(xDomain);
+
   const resizeDomain = ({ axis = "Y", key = "", min = 0, max = Infinity }) => {
     const _data = [...data].filter((d) => {
       return d[key] > min && d[key] < max;
     });
     if (axis === "Y" && _data.length > 0) {
       yDomain = [
-        ...[d3.min(_data, (d) => d.low), d3.max(_data, (d) => d.high)],
+        ...[d3.min(_data, (d) => d.volume), d3.max(_data, (d) => d.volume)],
       ];
-      console.log([d3.min(_data, (d) => d.low), d3.max(_data, (d) => d.high)]);
     }
   };
 
   let evt;
   let evtMouseDotted = evt;
-  let hideTooltip = true;
+
   const handleWheel = (e) => {
     changeDomain(e.deltaY);
     //e.preventDefault();
@@ -115,7 +122,10 @@
     return format(d, "dd/MM");
   };
   const check = () => {
-    console.log("xDomain", xDomain);
+    console.log("xDomain", xDomain, "yDomain", yDomain, "data", data);
+  };
+  const formatTickY = (d) => {
+    return d3.format(".2s")(d);
   };
 </script>
 
@@ -143,39 +153,12 @@
     {xDomain}
     {yDomain}
     xPadding={[50, 50]}
-    yPadding={[50, 50]}
     {data}
   >
-    <!-- <Svg>
-        <AxisX />
-        <AxisY ticks={4} />
-        <Line stroke={"#ff3e00"} />
-        <Area fill={"rgba(255, 62, 0, 0.2)"} />
-      </Svg> -->
-    <Svg zIndex={1}>
-      <Candlestick
-        on:mousemove={(event) => (evt = hideTooltip = event)}
-        on:mouseout={() => (hideTooltip = true)}
-      />
-    </Svg>
-
     <Svg>
-      <RandomIndicator />
-    </Svg>
-    <Html pointerEvents={false}>
-      {#if hideTooltip !== true}
-        <Tooltip {evt} let:detail>
-          {#each Object.entries(detail.props) as [key, value]}
-            <div class="row"><span>{key}:</span> {value}</div>
-          {/each}
-        </Tooltip>
-      {/if}
-    </Html>
-
-    <Svg>
+      <Volume />
       <AxisX formatTick={formatTickX} />
-      <DottedLine evt={evtMouseDotted} {padding} {width} {height} />
-      <AxisY />
+      <AxisY formatTick={formatTickY} />
     </Svg>
   </LayerCake>
 </div>

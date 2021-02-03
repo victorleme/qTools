@@ -1,16 +1,18 @@
 <script>
   import CandlestickChart from "../CandlestickChart/CandlestickChart.component.svelte";
+  import VolumeChart from "../VolumeChart/VolumeChart.component.svelte";
   import data from "../../data/AAPL.csv";
   import { formatEntry, textToCSV } from "../../data/data.utils";
+  import { chartStore } from "../../store/chart/chart.store";
+
   let sinceDate = "2004-01";
   let untilDate = "2005-01";
-  $: console.log(sinceDate, untilDate);
-  console.log(sinceDate, untilDate);
+
   let formattedData = [];
   const formatData = async (data) => {
     const dateObjectSince = new Date(sinceDate);
     const dateObjectUntil = new Date(untilDate);
-    console.log(dateObjectSince.getDay(), dateObjectUntil);
+
     formattedData = data
       .map((d) => {
         const newEntry = formatEntry(d);
@@ -25,15 +27,7 @@
           d.date > dateObjectSince && d.date < dateObjectUntil;
         return isEqualDates || isBetweenDates;
       });
-    if (formattedData.length > 0) {
-      console.log(
-        formattedData[0].date,
-        formattedData[formattedData.length - 1].date,
-        dateObjectSince,
-        formattedData
-      );
-      console.log(formattedData[0]);
-    }
+    chartStore.setData([...formattedData]);
   };
   $: data.length > 0 && formatData(data);
   //   data = [...(await textToCSV(text))];
@@ -54,19 +48,21 @@
     </div>
   </div>
   <div class="graph-chart">
-    <CandlestickChart data={formattedData} />
+    <div class="main-chart"><CandlestickChart data={formattedData} /></div>
+    <div class="aux-chart-1"><VolumeChart data={formattedData} /></div>
   </div>
 </div>
 
 <style lang="scss">
   .graph-chart {
-    height: 30rem;
     background-color: white;
+    display: grid;
+    grid-template-rows: 5fr 1fr;
   }
   .asset-label {
     display: inline-block;
     font-size: 1.5rem;
-    padding: 1rem 1rem;
+    padding: 1.5rem 1.5rem;
     &:hover {
       background-color: #b0c1e8;
     }
@@ -84,8 +80,8 @@
   }
   .graph-grid {
     display: grid;
-
-    grid-template-rows: 1fr max-content;
+    height: 100%;
+    grid-template-rows: min-content 1fr;
     grid-row-gap: 0.1rem;
   }
 </style>
