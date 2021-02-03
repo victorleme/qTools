@@ -21,10 +21,10 @@
     formatDateInTickX,
     handlePanMove,
     getDifferenceInMilliseconds,
-    getDifferenceInDays,
     filterDataByXDomain,
+    changeDomainCTRL,
   } from "../../chart-utils/chart.utils";
-
+  let evtMouseListener;
   let yDomain = [];
   let xDomain = [];
   let xTicksVals = [];
@@ -56,8 +56,20 @@
       xTicksVals.length > 0
         ? getDifferenceInMilliseconds(xTicksVals[3], xTicksVals[0])
         : 0;
-    console.log(step);
-    changeDomain(e.deltaY, step);
+
+    if (e.ctrlKey) {
+      const xCenter = d3
+        .scaleTime()
+        .domain($chartStore.xDomain)
+        .range([0, width - 50])
+        .invert(evtMouseDotted.offsetX);
+      e.preventDefault();
+      console.log(evtMouseDotted, xCenter);
+      changeDomainCTRL({ delta: e.deltaY, stepInteger: 2, xCenter: xCenter });
+    } else {
+      console.log(step);
+      changeDomain(e.deltaY, step);
+    }
   };
   const onPanMove = (e) => {
     isDragging = true;
@@ -89,7 +101,6 @@
         ? [d3.min(data, (d) => d.low), d3.max(data, (d) => d.high)]
         : [];
   });
-  $: console.log(xTicksVals);
 </script>
 
 <div
@@ -126,7 +137,9 @@
       </Svg> -->
     <Svg zIndex={1}>
       <Candlestick
-        on:mousemove={(event) => (evt = hideTooltip = event)}
+        on:mousemove={(event) => {
+          evt = hideTooltip = event;
+        }}
         on:mouseout={() => (hideTooltip = true)}
       />
     </Svg>

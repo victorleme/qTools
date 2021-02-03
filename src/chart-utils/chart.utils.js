@@ -100,6 +100,52 @@ export const changeDomain = (delta = 0, stepInMs = 0) => {
   //xDomain = [...[xDomain[0].setMonth(xDomain[0].getMonth() - 1), xDomain[1]]];
 };
 
+export const changeDomainCTRL = ({
+  delta = 0,
+  stepInteger = 2,
+  xCenter = 0,
+}) => {
+  let xDomainStore = [];
+  let newXDomain = [];
+  const OneMonth = { months: 1 };
+  chartStore.subscribe((store) => {
+    xDomainStore = [...store.xDomain];
+  });
+  if (xDomainStore.length !== 2) return;
+  const maxDate = xDomainStore[1];
+  const minDate = xDomainStore[0];
+
+  if (delta < 0) {
+    const xCenterMinusMinDate =
+      getDifferenceInMilliseconds(xCenter, minDate) / stepInteger;
+    const maxDateMinusXCenter =
+      getDifferenceInMilliseconds(maxDate, xCenter) / stepInteger;
+    const newMinDate = subMilliseconds(xCenter, xCenterMinusMinDate); //sub(minDate, OneMonth);
+    const newMaxDate = addMilliseconds(xCenter, maxDateMinusXCenter);
+    console.log("zoom in", xCenterMinusMinDate, newMinDate, minDate, xCenter);
+    newXDomain = [...[newMinDate, newMaxDate]];
+  }
+  if (delta > 0) {
+    const xCenterMinusMinDate =
+      getDifferenceInMilliseconds(xCenter, minDate) * stepInteger;
+    const maxDateMinusXCenter =
+      getDifferenceInMilliseconds(maxDate, xCenter) * stepInteger;
+    const newMinDate = subMilliseconds(xCenter, xCenterMinusMinDate); //sub(minDate, OneMonth);
+    const newMaxDate = addMilliseconds(xCenter, maxDateMinusXCenter);
+
+    newXDomain = [...[newMinDate, newMaxDate]];
+  }
+  console.log(newXDomain);
+  chartStore.setXDomain(newXDomain);
+
+  //   resizeDomain({
+  //     axis: "Y",
+  //     key: "date",
+  //     min: newXDomain[0],
+  //     max: newXDomain[1],
+  //   });
+  //xDomain = [...[xDomain[0].setMonth(xDomain[0].getMonth() - 1), xDomain[1]]];
+};
 export const handlePanMove = ({ detail = { dx: 0, dy: 0 } }, stepInMs) => {
   const { dx, dy } = detail;
   const [minDate, maxDate] = getMinAndMaxXDomainFromStore();

@@ -15,17 +15,35 @@
       raise(this);
       // When the element gets raised, it flashes 0,0 for a second so skip that
       if (e.layerX !== 0 && e.layerY !== 0) {
-        dispatch("mousemove", { e, props: d });
+        dispatch("mousemove", {
+          e,
+          props: { ...d, centerX: $xScale.invert(e.offsetX - 25) },
+        });
       }
+      // paddingLeft
     };
   }
+  const handleMouseListener = (evt) => {
+    console.log(evt.offsetX);
+  };
 </script>
 
-<g class="bar-group" on:mouseout={(e) => dispatch("mouseout")}>
+<g
+  class="bar-group"
+  on:mouseout={(e) =>
+    dispatch("mouseout", {
+      e,
+      props: { centerX: $xScale.invert(e.offsetX - 25) },
+    })}
+>
   {#each $data as d, i}
     {#if $xScale(d.date)}
       <g
-        on:mouseover={(e) => dispatch("mousemove", { e, props: d })}
+        on:mouseover={(e) =>
+          dispatch("mousemove", {
+            e,
+            props: { ...d, centerX: $xScale.invert(e.offsetX - 25) },
+          })}
         on:mousemove={handleMousemove(d)}
       >
         <line
