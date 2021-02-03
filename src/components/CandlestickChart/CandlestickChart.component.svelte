@@ -3,7 +3,7 @@
   import dragChart from "../../assets/layercake-actions/drag-chart";
   import * as d3 from "d3";
 
-  import { format, isFirstDayOfMonth } from "date-fns";
+  import { format, isFirstDayOfMonth, set } from "date-fns";
   import AxisX from "../../assets/layercake-components/AxisX.svelte";
   import AxisY from "../../assets/layercake-components/AxisY.svelte";
   import Tooltip from "../../assets/layercake-components/Tooltip.svelte";
@@ -14,17 +14,20 @@
   export let data = [];
 
   import Candlestick from "../../assets/layercake-components/Candlestick.svelte";
-  import { textToCSV } from "../../data/data.utils";
+
   import RandomIndicator from "../../assets/layercake-components/RandomIndicator.svg.svelte";
   import {
-    willUpdateXDomainInStore,
     changeDomain,
     formatDateInTickX,
     handlePanMove,
+    getDifferenceInMilliseconds,
+    getDifferenceInDays,
+    filterDataByXDomain,
   } from "../../chart-utils/chart.utils";
 
   let yDomain = [];
   let xDomain = [];
+  let xTicksVals = [];
   let isDragging = false;
   //Layers: Pontos,
 
@@ -49,18 +52,29 @@
   let evtMouseDotted = evt;
   let hideTooltip = true;
   const handleWheel = (e) => {
-    changeDomain(e.deltaY);
+    const step =
+      xTicksVals.length > 0
+        ? getDifferenceInMilliseconds(xTicksVals[3], xTicksVals[0])
+        : 0;
+    console.log(step);
+    changeDomain(e.deltaY, step);
   };
   const onPanMove = (e) => {
     isDragging = true;
-    handlePanMove(e);
+    const step =
+      xTicksVals.length > 0
+        ? getDifferenceInMilliseconds(xTicksVals[1], xTicksVals[0]) / 3
+        : 0;
+    handlePanMove(e, step);
   };
   const onPanEnd = () => {
     isDragging = false;
   };
-
+  const setXticksVals = (ticks) => {
+    xTicksVals = [...ticks];
+  };
   const check = () => {
-    console.log("xDomain", xDomain);
+    console.log("xDomain", xDomain, "yDomain");
   };
   chartStore.subscribe((store) => {
     let data = [...store.data];
@@ -68,11 +82,14 @@
       d[yKey] = +d[yKey];
     });
     xDomain = [...store.xDomain];
+    data = filterDataByXDomain({ data, xKey: "date", xDomain });
+
     yDomain =
       data.length > 0
         ? [d3.min(data, (d) => d.low), d3.max(data, (d) => d.high)]
         : [];
   });
+  $: console.log(xTicksVals);
 </script>
 
 <div
@@ -128,7 +145,7 @@
     </Html>
 
     <Svg>
-      <AxisX formatTick={formatDateInTickX} />
+      <AxisX formatTick={formatDateInTickX} setTicksVals={setXticksVals} />
       <DottedLine evt={evtMouseDotted} {padding} {width} {height} />
       <AxisY />
     </Svg>

@@ -14,6 +14,7 @@
     formatDateInTickX,
     formatValueInTickY,
     handlePanMove,
+    getDifferenceInMilliseconds,
   } from "../../chart-utils/chart.utils";
   let width = 0,
     height = 0;
@@ -37,7 +38,7 @@
   // Desenhar Régua:
   let padding = { left: 25, bottom: 25, right: 50 };
   let chartContainerEl;
-
+  let xTicksVals = [];
   const xKey = "date";
   const yKey = "volume";
 
@@ -45,12 +46,20 @@
   let evtMouseDotted = evt;
 
   const handleWheel = (e) => {
-    changeDomain(e.deltaY);
+    const step =
+      xTicksVals.length > 0
+        ? getDifferenceInMilliseconds(xTicksVals[3], xTicksVals[0])
+        : 0;
+    changeDomain(e.deltaY, step);
     //e.preventDefault();
   };
   const onPanMove = (e) => {
     isDragging = true;
-    handlePanMove(e);
+    const step =
+      xTicksVals.length > 0
+        ? getDifferenceInMilliseconds(xTicksVals[1], xTicksVals[0]) / 3
+        : 0;
+    handlePanMove(e, step);
   };
   const onPanEnd = () => {
     isDragging = false;
@@ -59,7 +68,9 @@
   const check = () => {
     console.log("xDomain", xDomain, "yDomain", yDomain, "data", data);
   };
-
+  const setXticksVals = (ticks) => {
+    xTicksVals = [...ticks];
+  };
   chartStore.subscribe((store) => {
     const data = store.data;
 
@@ -101,7 +112,7 @@
   >
     <Svg>
       <Volume />
-      <AxisX formatTick={formatDateInTickX} />
+      <AxisX formatTick={formatDateInTickX} setTicksVals={setXticksVals} />
       <AxisY formatTick={formatValueInTickY} />
     </Svg>
   </LayerCake>

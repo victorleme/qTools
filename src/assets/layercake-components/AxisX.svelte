@@ -1,5 +1,6 @@
 <script>
   import { getContext } from "svelte";
+  import { chartStore } from "../../store/chart/chart.store";
 
   const { width, height, xScale, yScale, yRange, data } = getContext(
     "LayerCake"
@@ -10,6 +11,7 @@
   export let baseline = false;
   export let snapTicks = false;
   export let ticks = undefined;
+  export let setTicksVals = undefined;
   export let xTick = undefined;
   export let yTick = 16;
   export let dxTick = 0;
@@ -22,7 +24,7 @@
     : isBandwidth
     ? $xScale.domain()
     : $xScale.ticks(ticks);
-
+  $: typeof setTicksVals === "function" && setTicksVals(tickVals);
   function textAnchor(i) {
     if (snapTicks === true) {
       if (i === 0) {

@@ -2,10 +2,14 @@
   import { getContext, createEventDispatcher } from "svelte";
   import * as d3 from "d3";
   import { raise } from "layercake";
-  const { data, xGet, yGet, xScale, yScale } = getContext("LayerCake");
+  const { data, xGet, yGet, xScale, yScale, xDomain } = getContext("LayerCake");
   const dispatch = createEventDispatcher();
 
-  data.subscribe((data) => {});
+  let candleWitdh = 200;
+  const getWidth = () => {
+    if (data.length === 0) return 0;
+    return candleWitdh / data.length;
+  };
   function handleMousemove(d) {
     return function handleMousemoveFn(e) {
       raise(this);
@@ -28,7 +32,7 @@
           y1={$yScale(d.low)}
           stroke={"black"}
           y2={$yScale(d.high)}
-          style="stroke-width:1"
+          stroke-width={`2`}
           transform={`translate(${$xScale(d.date)},0)`}
         />
         <line
@@ -39,7 +43,7 @@
             : d.close > d.open
             ? d3.schemeSet1[2]
             : d3.schemeSet1[8]}
-          style="stroke-width:5"
+          stroke-width={`5`}
           transform={`translate(${$xScale(d.date)},0)`}
         />
       </g>

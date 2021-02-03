@@ -1,6 +1,21 @@
 import { chartStore } from "../store/chart/chart.store";
-import { sub, add, format, isFirstDayOfMonth } from "date-fns";
+import {
+  sub,
+  add,
+  format,
+  isFirstDayOfMonth,
+  differenceInMilliseconds,
+  subMilliseconds,
+  addMilliseconds,
+  differenceInDays,
+} from "date-fns";
 import * as d3 from "d3";
+export const getDifferenceInMilliseconds = (dLater, dEarly) => {
+  return differenceInMilliseconds(dLater, dEarly);
+};
+export const getDifferenceInDays = (dLater, dEarly) => {
+  return differenceInDays(dLater, dEarly);
+};
 export const getDomainOfDateRange = ({ data = [], key = "" }) => {
   return d3.extent(data, function (d) {
     return d[key];
@@ -48,7 +63,12 @@ export const getMinAndMaxXDomainFromStore = () => {
   const minDate = xDomainStore[0];
   return [minDate, maxDate];
 };
-export const changeDomain = (delta = 0) => {
+export const filterDataByXDomain = ({ data = [], xDomain = [], xKey = "" }) => {
+  return data.filter((d) => {
+    return d[xKey] > xDomain[0] && d[xKey] < xDomain[1];
+  });
+};
+export const changeDomain = (delta = 0, stepInMs = 0) => {
   let xDomainStore = [];
   let newXDomain = [];
   const OneMonth = { months: 1 };
@@ -60,11 +80,12 @@ export const changeDomain = (delta = 0) => {
   const minDate = xDomainStore[0];
 
   if (delta > 0) {
-    const newMinDate = sub(minDate, OneMonth);
+    const newMinDate = subMilliseconds(minDate, stepInMs); //sub(minDate, OneMonth);
+
     newXDomain = [...[newMinDate, maxDate]];
   }
   if (delta < 0) {
-    const newMinDate = add(minDate, OneMonth);
+    const newMinDate = addMilliseconds(minDate, stepInMs); //add(minDate, OneMonth);
 
     newXDomain = [...[newMinDate, maxDate]];
   }
@@ -79,13 +100,17 @@ export const changeDomain = (delta = 0) => {
   //xDomain = [...[xDomain[0].setMonth(xDomain[0].getMonth() - 1), xDomain[1]]];
 };
 
-export const handlePanMove = ({ detail = { dx: 0, dy: 0 } }) => {
+export const handlePanMove = ({ detail = { dx: 0, dy: 0 } }, stepInMs) => {
   const { dx, dy } = detail;
   const [minDate, maxDate] = getMinAndMaxXDomainFromStore();
   const newMinDate =
-    dx < 0 ? add(minDate, { days: 3 }) : sub(minDate, { days: 3 });
+    dx < 0
+      ? addMilliseconds(minDate, stepInMs)
+      : subMilliseconds(minDate, stepInMs);
   const newMaxDate =
-    dx < 0 ? add(maxDate, { days: 3 }) : sub(maxDate, { days: 3 });
+    dx < 0
+      ? addMilliseconds(maxDate, stepInMs)
+      : subMilliseconds(maxDate, stepInMs);
 
   let newXDomain = [...[newMinDate, newMaxDate]];
   chartStore.setXDomain(newXDomain);
