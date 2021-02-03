@@ -4,6 +4,7 @@
   import data from "../../data/AAPL.csv";
   import { formatEntry, textToCSV } from "../../data/data.utils";
   import { chartStore } from "../../store/chart/chart.store";
+  import { getDomainOfDateRange } from "../../chart-utils/chart.utils";
 
   let sinceDate = "2004-01";
   let untilDate = "2005-01";
@@ -27,6 +28,10 @@
           d.date > dateObjectSince && d.date < dateObjectUntil;
         return isEqualDates || isBetweenDates;
       });
+    const xDomain = getDomainOfDateRange({ data: formattedData, key: "date" });
+
+    chartStore.setXDomain(xDomain);
+
     chartStore.setData([...formattedData]);
   };
   $: data.length > 0 && formatData(data);

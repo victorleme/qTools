@@ -11,17 +11,6 @@
   const columnHeight = (d) => {
     return $yRange[0] - $yGet(d);
   };
-  data.subscribe((d) => {
-    d.map((element) => {
-      console.log(
-        element,
-        $yRange,
-        columnHeight(element),
-
-        $xGet(d)
-      );
-    });
-  });
 
   /* --------------------------------------------
    * Default styles

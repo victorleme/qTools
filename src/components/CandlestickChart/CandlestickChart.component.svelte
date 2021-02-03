@@ -3,12 +3,12 @@
   import dragChart from "../../assets/layercake-actions/drag-chart";
   import * as d3 from "d3";
 
-  import { sub, add, format, isFirstDayOfMonth } from "date-fns";
+  import { format, isFirstDayOfMonth } from "date-fns";
   import AxisX from "../../assets/layercake-components/AxisX.svelte";
   import AxisY from "../../assets/layercake-components/AxisY.svelte";
   import Tooltip from "../../assets/layercake-components/Tooltip.svelte";
   import DottedLine from "../../assets/layercake-components/DottedLine.svelte";
-  import Volume from "../../assets/layercake-components/Volume.svelte";
+
   import { chartStore } from "../../store/chart/chart.store";
   // This example loads csv data as json using @rollup/plugin-dsv
   export let data = [];
@@ -16,6 +16,15 @@
   import Candlestick from "../../assets/layercake-components/Candlestick.svelte";
   import { textToCSV } from "../../data/data.utils";
   import RandomIndicator from "../../assets/layercake-components/RandomIndicator.svg.svelte";
+  import {
+    willUpdateXDomainInStore,
+    changeDomain,
+    formatDateInTickX,
+    handlePanMove,
+  } from "../../chart-utils/chart.utils";
+
+  let yDomain = [];
+  let xDomain = [];
   let isDragging = false;
   //Layers: Pontos,
 
@@ -33,90 +42,37 @@
   let width, height;
   const xKey = "date";
   const yKey = "high";
-  data.forEach((d) => {
-    d[yKey] = +d[yKey];
-  });
-  $: [minDate, maxDate] =
-    data.length > 0
-      ? d3.extent(data, function (d) {
-          return d.date;
-        })
-      : [-1, 1];
 
-  $: yDomain =
-    data.length > 0
-      ? [d3.min(data, (d) => d.low), d3.max(data, (d) => d.high)]
-      : [0, 1];
   //[d3.min(data, (d) => d.low), d3.max(data, (d) => d.high)]
-  $: xDomain =
-    data.length > 0
-      ? d3.extent(data, function (d) {
-          return d.date;
-        })
-      : [];
-  $: yRange = [];
-  $: chartStore.setXDomain(xDomain);
-  const resizeDomain = ({ axis = "Y", key = "", min = 0, max = Infinity }) => {
-    const _data = [...data].filter((d) => {
-      return d[key] > min && d[key] < max;
-    });
-    if (axis === "Y" && _data.length > 0) {
-      yDomain = [
-        ...[d3.min(_data, (d) => d.low), d3.max(_data, (d) => d.high)],
-      ];
-      console.log([d3.min(_data, (d) => d.low), d3.max(_data, (d) => d.high)]);
-    }
-  };
 
   let evt;
   let evtMouseDotted = evt;
   let hideTooltip = true;
   const handleWheel = (e) => {
     changeDomain(e.deltaY);
-    //e.preventDefault();
   };
-  const changeDomain = (delta = 0) => {
-    const minDate = xDomain[0];
-
-    const OneMonth = { months: 1 };
-    if (delta > 0) {
-      const newMinDate = sub(minDate, OneMonth);
-      xDomain = [...[newMinDate, xDomain[1]]];
-    }
-    if (delta < 0) {
-      const newMinDate = add(minDate, OneMonth);
-
-      xDomain = [...[newMinDate, xDomain[1]]];
-    }
-
-    resizeDomain({ axis: "Y", key: "date", min: xDomain[0], max: xDomain[1] });
-    //xDomain = [...[xDomain[0].setMonth(xDomain[0].getMonth() - 1), xDomain[1]]];
-  };
-  const onPanMove = ({ detail = { dx: 0, dy: 0 } }) => {
+  const onPanMove = (e) => {
     isDragging = true;
-    const { dx, dy } = detail;
-    const [minDate, maxDate] = [...xDomain];
-    const newMinDate =
-      dx < 0 ? add(minDate, { days: 3 }) : sub(minDate, { days: 3 });
-    const newMaxDate =
-      dx < 0 ? add(maxDate, { days: 3 }) : sub(maxDate, { days: 3 });
-
-    xDomain = [...[newMinDate, newMaxDate]];
-    resizeDomain({ axis: "Y", key: "date", min: xDomain[0], max: xDomain[1] });
+    handlePanMove(e);
   };
   const onPanEnd = () => {
     isDragging = false;
   };
-  const logEvent = (e) => console.log(e.type, e.detail);
-  const formatTickX = (d) => {
-    const isFirstDay = isFirstDayOfMonth(d);
-    if (isFirstDay) return format(d, "MMM");
 
-    return format(d, "dd/MM");
-  };
   const check = () => {
     console.log("xDomain", xDomain);
   };
+  chartStore.subscribe((store) => {
+    let data = [...store.data];
+    data.forEach((d) => {
+      d[yKey] = +d[yKey];
+    });
+    xDomain = [...store.xDomain];
+    yDomain =
+      data.length > 0
+        ? [d3.min(data, (d) => d.low), d3.max(data, (d) => d.high)]
+        : [];
+  });
 </script>
 
 <div
@@ -127,7 +83,6 @@
   bind:this={chartContainerEl}
   on:wheel={handleWheel}
   use:dragChart
-  on:panstart={logEvent}
   on:panmove={onPanMove}
   on:panend={onPanEnd}
   on:click={check}
@@ -173,7 +128,7 @@
     </Html>
 
     <Svg>
-      <AxisX formatTick={formatTickX} />
+      <AxisX formatTick={formatDateInTickX} />
       <DottedLine evt={evtMouseDotted} {padding} {width} {height} />
       <AxisY />
     </Svg>
