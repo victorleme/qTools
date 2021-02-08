@@ -8,6 +8,7 @@ import {
   subMilliseconds,
   addMilliseconds,
   differenceInDays,
+  isValid,
 } from "date-fns";
 import * as d3 from "d3";
 export const getDifferenceInMilliseconds = (dLater, dEarly) => {
@@ -83,13 +84,14 @@ export const changeDomain = (delta = 0, stepInMs = 0) => {
     const newMinDate = subMilliseconds(minDate, stepInMs); //sub(minDate, OneMonth);
 
     newXDomain = [...[newMinDate, maxDate]];
+    chartStore.setXDomain(newXDomain);
   }
   if (delta < 0) {
     const newMinDate = addMilliseconds(minDate, stepInMs); //add(minDate, OneMonth);
 
     newXDomain = [...[newMinDate, maxDate]];
+    chartStore.setXDomain(newXDomain);
   }
-  chartStore.setXDomain(newXDomain);
 
   //   resizeDomain({
   //     axis: "Y",
@@ -175,4 +177,8 @@ export const formatDateInTickX = (d) => {
   if (isFirstDay) return format(d, "MMM");
 
   return format(d, "dd/MM");
+};
+export const formatDateInAxisDetail = (date) => {
+  if (!isValid(date)) return;
+  return format(date, "dd, MMM yy");
 };

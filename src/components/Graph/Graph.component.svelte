@@ -1,41 +1,24 @@
 <script>
+  import { onMount } from "svelte";
   import CandlestickChart from "../CandlestickChart/CandlestickChart.component.svelte";
   import VolumeChart from "../VolumeChart/VolumeChart.component.svelte";
-  import data from "../../data/AAPL.csv";
-  import { formatEntry, textToCSV } from "../../data/data.utils";
+  import dataAAPL from "../../data/AAPL.csv";
+  import { getFormattedDataAndXDomain } from "../../data/data.utils";
   import { chartStore } from "../../store/chart/chart.store";
-  import { getDomainOfDateRange } from "../../chart-utils/chart.utils";
 
   let sinceDate = "2004-01";
   let untilDate = "2005-01";
 
   let formattedData = [];
-  const formatData = async (data) => {
-    const dateObjectSince = new Date(sinceDate);
-    const dateObjectUntil = new Date(untilDate);
 
-    formattedData = data
-      .map((d) => {
-        const newEntry = formatEntry(d);
-
-        return newEntry;
-      })
-      .filter((d) => {
-        const isEqualDates =
-          d.date.valueOf() === dateObjectUntil.valueOf() ||
-          d.date.valueOf() === dateObjectSince.valueOf();
-        const isBetweenDates =
-          d.date > dateObjectSince && d.date < dateObjectUntil;
-        return isEqualDates || isBetweenDates;
-      });
-    const xDomain = getDomainOfDateRange({ data: formattedData, key: "date" });
-
+  const fetchData = () => {
+    const { data, xDomain } = getFormattedDataAndXDomain(dataAAPL);
     chartStore.setXDomain(xDomain);
-
     chartStore.setData([...formattedData]);
   };
-  $: data.length > 0 && formatData(data);
-  //   data = [...(await textToCSV(text))];
+  onMount(() => {
+    fetchData();
+  });
 </script>
 
 <div class="graph-grid">

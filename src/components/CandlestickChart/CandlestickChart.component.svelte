@@ -3,7 +3,6 @@
   import dragChart from "../../assets/layercake-actions/drag-chart";
   import * as d3 from "d3";
 
-  import { format, isFirstDayOfMonth, set } from "date-fns";
   import AxisX from "../../assets/layercake-components/AxisX.svelte";
   import AxisY from "../../assets/layercake-components/AxisY.svelte";
   import Tooltip from "../../assets/layercake-components/Tooltip.svelte";
@@ -64,10 +63,8 @@
         .range([0, width - 50])
         .invert(evtMouseDotted.offsetX);
       e.preventDefault();
-      console.log(evtMouseDotted, xCenter);
       changeDomainCTRL({ delta: e.deltaY, stepInteger: 2, xCenter: xCenter });
     } else {
-      console.log(step);
       changeDomain(e.deltaY, step);
     }
   };
@@ -158,7 +155,12 @@
     </Html>
 
     <Svg>
-      <AxisX formatTick={formatDateInTickX} setTicksVals={setXticksVals} />
+      <AxisX
+        evt={evtMouseDotted}
+        {padding}
+        formatTick={formatDateInTickX}
+        setTicksVals={setXticksVals}
+      />
       <DottedLine evt={evtMouseDotted} {padding} {width} {height} />
       <AxisY />
     </Svg>

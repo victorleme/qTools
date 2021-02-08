@@ -2,10 +2,26 @@
   import { getContext, createEventDispatcher } from "svelte";
   import * as d3 from "d3";
   import { raise } from "layercake";
+  import {
+    getDifferenceInMilliseconds,
+    getDomainOfDateRange,
+  } from "../../chart-utils/chart.utils";
+
+  export let trim = 0;
   const { data, xGet, yGet, xScale, yScale, xDomain } = getContext("LayerCake");
   const dispatch = createEventDispatcher();
 
   let candleWitdh = 200;
+  const getBandwidthCandlestick = () => {
+    const [minDate, maxDate] = getDomainOfDateRange({
+      data: $data,
+      key: "date",
+    });
+    const xDomainOriginalDelta = getDifferenceInMilliseconds(maxDate, minDate);
+    const xDomainDelta = getDifferenceInMilliseconds($xDomain[1], $xDomain[0]);
+
+    return xDomainOriginalDelta / xDomainDelta;
+  };
   const getWidth = () => {
     if (data.length === 0) return 0;
     return candleWitdh / data.length;
@@ -37,7 +53,7 @@
     })}
 >
   {#each $data as d, i}
-    {#if $xScale(d.date)}
+    {#if $xScale(d.date) && i > $data.length - trim}
       <g
         on:mouseover={(e) =>
           dispatch("mousemove", {
@@ -48,9 +64,13 @@
       >
         <line
           y1={$yScale(d.low)}
-          stroke={"black"}
+          stroke={d.open > d.close
+            ? d3.schemeSet1[0]
+            : d.close > d.open
+            ? d3.schemeSet1[2]
+            : d3.schemeSet1[8]}
           y2={$yScale(d.high)}
-          stroke-width={`2`}
+          stroke-width={1 * getBandwidthCandlestick() * 0.9}
           transform={`translate(${$xScale(d.date)},0)`}
         />
         <line
@@ -61,7 +81,7 @@
             : d.close > d.open
             ? d3.schemeSet1[2]
             : d3.schemeSet1[8]}
-          stroke-width={`5`}
+          stroke-width={Math.round(5 * getBandwidthCandlestick(d) * 0.9)}
           transform={`translate(${$xScale(d.date)},0)`}
         />
       </g>

@@ -1,7 +1,7 @@
 <script>
   import { getContext } from "svelte";
   import { chartStore } from "../../store/chart/chart.store";
-
+  import { formatDateInAxisDetail } from "../../chart-utils/chart.utils";
   const { width, height, xScale, yScale, yRange, data } = getContext(
     "LayerCake"
   );
@@ -16,7 +16,11 @@
   export let yTick = 16;
   export let dxTick = 0;
   export let dyTick = 0;
-
+  export let detailInAxis = false;
+  export let padding = { top: 0, left: 0, right: 0, bottom: 0 };
+  export let evt = null;
+  $: centerX = evt ? evt.offsetX : 0;
+  $: centerY = evt ? evt.offsetY : 0;
   $: isBandwidth = typeof $xScale.bandwidth === "function";
 
   $: tickVals = Array.isArray(ticks)
@@ -24,6 +28,7 @@
     : isBandwidth
     ? $xScale.domain()
     : $xScale.ticks(ticks);
+  $: posDetailX = $xScale?.invert(centerX - padding.left);
   $: typeof setTicksVals === "function" && setTicksVals(tickVals);
   function textAnchor(i) {
     if (snapTicks === true) {
@@ -56,6 +61,7 @@
       >
     </g>
   {/each}
+
   {#if baseline === true}
     <line
       class="baseline"
@@ -66,6 +72,27 @@
     />
   {/if}
 </g>
+{#if detailInAxis}
+  <!-- <rect
+    class="group-rect"
+    x={-50}
+    y={0}
+    height={20}
+    width={100}
+    transform="translate({$xScale(posDetailX)},{$yRange[0]})"
+    fill="grey"
+  /> -->
+  <text
+    z={99}
+    x="30"
+    y={16}
+    dx={dxTick}
+    dy={dyTick}
+    text-anchor={"end"}
+    transform="translate({$xScale(posDetailX)},{$yRange[0]})"
+    fill="grey">{formatDateInAxisDetail(posDetailX)}</text
+  >
+{/if}
 
 <style>
   .axis {
