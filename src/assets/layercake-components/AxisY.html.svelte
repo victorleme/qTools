@@ -92,6 +92,7 @@
     width: 100%;
     height: 100%;
     z-index: 9;
+    user-select: none;
   }
   .tick {
     font-size: 12px;

@@ -10,7 +10,7 @@
 
   import AxisY from "../assets/layercake-components/AxisY.svelte";
   import CandlestickCanvas from "../assets/layercake-components/Candlestick.canvas.svelte";
-  import CandlestickSVG from "../assets/layercake-components/Candlestick.svelte";
+  import DottedLine from "../assets/layercake-components/DottedLine.svelte";
   import Tooltip from "../assets/layercake-components/Tooltip.svelte";
 
   import dragChart from "../assets/layercake-actions/drag-chart";
@@ -89,6 +89,7 @@
     let data = [...chart.data];
     data.forEach((d) => {
       d[yKey] = +d[yKey];
+      d["volume"] = +d["volume"];
     });
 
     data = filterDataByXDomain({ data, xKey: "date", xDomain: chart.xDomain });
@@ -103,7 +104,7 @@
       const yOriginalMax = d3.max(data, (d) => d.high);
       const yOriginalMin = d3.max(data, (d) => d.low);
       const deltaMax = (yMax - yOriginalMax) / yMax;
-      console.log("[deltaMax]", deltaMax, "Res", deltaMax * yMax);
+
       const deltaMin = yMin - yOriginalMin;
       yDomain = data.length > 0 ? [yMin, yMax] : [];
     }
@@ -121,7 +122,7 @@
         $chartStore.xDomain[0]
       ) / 7;
     const dx = e.detail.dx;
-    console.log(dx);
+
     changeDomain(dx, step);
   };
   const onAxisXEnd = () => {
@@ -161,7 +162,6 @@
   const onAxisYEnd = () => {
     isMovingAxis = false;
   };
-  $: console.log("yDomain", yDomain);
 </script>
 
 <div
@@ -207,15 +207,8 @@
       {/if}
     </Html>
 
-    <Svg />
-    <Svg zIndex={1}>
-      <CandlestickSVG
-        trim={5}
-        on:mousemove={(event) => {
-          evt = hideTooltip = event;
-        }}
-        on:mouseout={() => (hideTooltip = true)}
-      />
+    <Svg>
+      <DottedLine evt={evtMouseDotted} {padding} {width} {height} />
     </Svg>
   </LayerCake>
 </div>

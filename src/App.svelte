@@ -5,7 +5,7 @@
 </script>
 
 <main>
-  <!-- <Dashboard /> -->
+  <Dashboard />
   <CanvasWithSVG />
 </main>
 

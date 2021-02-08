@@ -22,7 +22,7 @@
   let yDomain = [];
   let xDomain = [];
 
-  export let data = [];
+  let data = [];
 
   let isDragging = false;
   //Layers: Pontos,
@@ -72,12 +72,15 @@
     xTicksVals = [...ticks];
   };
   chartStore.subscribe((store) => {
-    const data = store.data;
+    const dataStore = store.data;
 
     xDomain = [...store.xDomain];
-    data.forEach((d) => {
+
+    dataStore.forEach((d) => {
       d[yKey] = +d[yKey];
+      d["volume"] = +d["volume"];
     });
+    data = [...dataStore];
     yDomain =
       data.length > 0
         ? [d3.min(data, (d) => d.volume), d3.max(data, (d) => d.volume)]
@@ -104,10 +107,8 @@
     y={yKey}
     yScale={d3.scaleLinear()}
     xScale={d3.scaleTime()}
-    xRange={[0, width - 50]}
     xDomain={$chartStore.xDomain}
     {yDomain}
-    xPadding={[50, 50]}
     {data}
   >
     <Svg>
