@@ -1,12 +1,12 @@
 <script lang="ts">
   import Dashboard from "./components/Dashboard/Dashboard.component.svelte";
   import CanvasWithSVG from "./playground/CanvasWithSVG.svelte";
+  import Paint from "./components/Paint/Paint.svelte";
   import { textToCSV } from "./data/data.utils";
 </script>
 
 <main>
   <Dashboard />
-  <CanvasWithSVG />
 </main>
 
 <style>

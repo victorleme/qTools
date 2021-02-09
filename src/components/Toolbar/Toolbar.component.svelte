@@ -1,9 +1,19 @@
 <script>
+  import Pencil from "../Pencil/Pencil.svelte";
+  import { isDrawing } from "../../store/paint/paint.store.js";
   const items = Array(140).fill("O");
+  const handleClickPencil = () => {
+    let isDrawingFlag = $isDrawing;
+
+    isDrawing.set(!isDrawingFlag);
+  };
 </script>
 
 <div class="toolbar-grid">
   <div class="toolbar-menu item">M</div>
+  <div class="toolbar item" on:click={handleClickPencil}>
+    <Pencil height={25} width={25} color={$isDrawing ? "orange" : "black"} />
+  </div>
   {#each items as item, i}
     <div class="toolbar item">{`${item}`}</div>
   {/each}
@@ -18,7 +28,7 @@
     border-bottom: 1px solid #e0e3eb;
   }
   .item {
-    cursor: default;
+    cursor: pointer;
     padding: 1.5rem 1.5rem;
     font-size: 1.5rem;
     &:hover {

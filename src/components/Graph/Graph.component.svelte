@@ -5,13 +5,17 @@
   import dataAAPL from "../../data/AAPL.csv";
   import { getFormattedDataAndXDomain } from "../../data/data.utils";
   import { chartStore } from "../../store/chart/chart.store";
+  import { isDrawing } from "../../store/paint/paint.store";
   import CanvasWithSvg from "../../playground/CanvasWithSVG.svelte";
-
+  let isDraw = false;
   let sinceDate = "2004-01";
   let untilDate = "2005-01";
 
   let formattedData = [];
-
+  isDrawing.subscribe((n) => {
+    console.log(n);
+    isDraw = n;
+  });
   const fetchData = () => {
     const { data, xDomain } = getFormattedDataAndXDomain(dataAAPL);
     chartStore.setXDomain(xDomain);
@@ -24,7 +28,7 @@
 
 <div class="graph-grid">
   <div class="graph-toolbar">
-    <div class="asset-label">ES12!</div>
+    <div class="asset-label">ES12!{isDraw}</div>
     <div class="input-year">
       <div class="date-1">
         <label>DE</label>

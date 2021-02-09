@@ -6,13 +6,14 @@
   import dataAAPL from "../data/AAPL.csv";
   import AxisXHTML from "../assets/layercake-components/AxisX.html.svelte";
   import AxisYHTML from "../assets/layercake-components/AxisY.html.svelte";
-
+  import Paint from "../components/Paint/Paint.svelte";
   import CandlestickCanvas from "../assets/layercake-components/Candlestick.canvas.svelte";
   import DottedLine from "../assets/layercake-components/DottedLine.svelte";
   import Tooltip from "../assets/layercake-components/Tooltip.svelte";
-
   import dragChart from "../assets/layercake-actions/drag-chart";
+
   import { getFormattedDataAndXDomain } from "../data/data.utils";
+
   import {
     changeDomain,
     changeDomainCTRL,
@@ -21,7 +22,9 @@
     formatDateInTickX,
     filterDataByXDomain,
   } from "../chart-utils/chart.utils";
+
   import { chartStore } from "../store/chart/chart.store";
+  import { isDrawing } from "../store/paint/paint.store";
 
   import { GREEN_PALLETE } from "../assets/candlesticks-colors/green.pallete";
   import { RED_PALLETE } from "../assets/candlesticks-colors/red.pallete";
@@ -84,7 +87,7 @@
   };
   const onPanMove = (e) => {
     if (isMovingAxis) return;
-
+    if ($isDrawing) return;
     isDragging = true;
     const step =
       getDifferenceInMilliseconds(
@@ -187,7 +190,6 @@
   const onAxisYEnd = () => {
     isMovingAxis = false;
   };
-  $: console.log(data);
 </script>
 
 <div
@@ -201,6 +203,7 @@
   on:panend={onPanEnd}
   on:mousemove={(evt) => (evtMouseDotted = evt)}
 >
+  <Paint {height} {width} />
   <LayerCake
     {data}
     {padding}
