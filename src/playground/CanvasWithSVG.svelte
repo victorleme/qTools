@@ -5,10 +5,8 @@
 
   import dataAAPL from "../data/AAPL.csv";
   import AxisXHTML from "../assets/layercake-components/AxisX.html.svelte";
-  import AxisX from "../assets/layercake-components/AxisX.svelte";
   import AxisYHTML from "../assets/layercake-components/AxisY.html.svelte";
 
-  import AxisY from "../assets/layercake-components/AxisY.svelte";
   import CandlestickCanvas from "../assets/layercake-components/Candlestick.canvas.svelte";
   import DottedLine from "../assets/layercake-components/DottedLine.svelte";
   import Tooltip from "../assets/layercake-components/Tooltip.svelte";
@@ -24,6 +22,10 @@
     filterDataByXDomain,
   } from "../chart-utils/chart.utils";
   import { chartStore } from "../store/chart/chart.store";
+
+  import { GREEN_PALLETE } from "../assets/candlesticks-colors/green.pallete";
+  import { RED_PALLETE } from "../assets/candlesticks-colors/red.pallete";
+
   let padding = { left: 25, bottom: 25, right: 50 };
   let chartContainerEl;
   let width, height;
@@ -37,6 +39,15 @@
   let evt = { offsetX: 0 };
   let hideTooltip = true;
   let isDragging = false;
+  let data = [];
+  const getColorHex = (element, index) => {
+    const colorIndex = Math.round(index);
+    return element.open > element.close
+      ? RED_PALLETE[colorIndex]
+      : element.close > element.open
+      ? GREEN_PALLETE[colorIndex]
+      : d3.schemeSet1[8];
+  };
   onMount(async () => {
     const { data, xDomain } = await getFormattedDataAndXDomain({
       data: dataAAPL,
@@ -82,21 +93,35 @@
       ) / 20;
     handlePanMove(e, step);
   };
+  const getColor = (data) =>
+    d3
+      .scaleLinear()
+      .domain(d3.extent(data, (d) => d.volume))
+      .range([0, 30]);
   const onPanEnd = () => {
     isDragging = false;
   };
   chartStore.subscribe((chart) => {
-    let data = [...chart.data];
-    data.forEach((d) => {
+    let dataStore = [...chart.data];
+    dataStore.forEach((d) => {
       d[yKey] = +d[yKey];
       d["volume"] = +d["volume"];
     });
 
-    data = filterDataByXDomain({ data, xKey: "date", xDomain: chart.xDomain });
+    dataStore = filterDataByXDomain({
+      data: dataStore,
+      xKey: "date",
+      xDomain: chart.xDomain,
+    });
+    const getColorFn = getColor(dataStore);
+    dataStore = dataStore.map((d) => {
+      return { ...d, fill: getColorHex(d, getColorFn(d.volume)) };
+    });
+    data = [...dataStore];
     if (yDomain.length == 0) {
       yDomain =
-        data.length > 0
-          ? [d3.min(data, (d) => d.low), d3.max(data, (d) => d.high)]
+        dataStore.length > 0
+          ? [d3.min(dataStore, (d) => d.low), d3.max(dataStore, (d) => d.high)]
           : [];
     } else {
       const yMax = yDomain[1];
@@ -162,6 +187,7 @@
   const onAxisYEnd = () => {
     isMovingAxis = false;
   };
+  $: console.log(data);
 </script>
 
 <div
@@ -176,7 +202,7 @@
   on:mousemove={(evt) => (evtMouseDotted = evt)}
 >
   <LayerCake
-    data={$chartStore.data}
+    {data}
     {padding}
     x={xKey}
     y={yKey}
@@ -194,7 +220,7 @@
       />
       <AxisYHTML onAxisDrag={onAxisYDrag} onAxisDragEnd={onAxisYEnd} />
     </Html>
-    <Canvas on:click={() => console.log("clicked")}>
+    <Canvas>
       <CandlestickCanvas {cursorPosX} />
     </Canvas>
     <Html pointerEvents={false}>
@@ -206,7 +232,7 @@
         </Tooltip>
       {/if}
     </Html>
-
+    <Canvas />
     <Svg>
       <DottedLine evt={evtMouseDotted} {padding} {width} {height} />
     </Svg>

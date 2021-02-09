@@ -5,8 +5,7 @@
     getDifferenceInMilliseconds,
     getDomainOfDateRange,
   } from "../../chart-utils/chart.utils";
-  import { GREEN_PALLETE } from "./../candlesticks-colors/green.pallete";
-  import { RED_PALLETE } from "./../candlesticks-colors/red.pallete";
+
   import * as d3 from "d3";
   export let cursorPosX = null;
   export let projection;
@@ -40,14 +39,6 @@
     .domain(d3.extent($data, (d) => d.volume))
     .range([0, 30]);
 
-  const getColor = (element) => {
-    const colorIndex = Math.round(getColorFromDomain(element.volume));
-    return element.open > element.close
-      ? RED_PALLETE[colorIndex]
-      : element.close > element.open
-      ? GREEN_PALLETE[colorIndex]
-      : d3.schemeSet1[8];
-  };
   const drawLine = ({
     x1 = 0,
     x2 = 0,
@@ -86,7 +77,7 @@
           y2: $yScale(element.high),
           x1: $xScale(element.date),
           x2: $xScale(element.date),
-          fill: getColor(element),
+          fill: element.fill,
           lineWidth: 0.5,
         });
         drawLine({
@@ -97,7 +88,7 @@
           fill:
             Math.abs($xScale(element.date) - cursorPosX) < 100
               ? "#yellow"
-              : getColor(element),
+              : element.fill,
           lineWidth: 5 * getBandwidthCandlestick() * 0.9,
         });
       });
