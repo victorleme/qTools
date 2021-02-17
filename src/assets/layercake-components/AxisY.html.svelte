@@ -25,7 +25,7 @@
     : $yScale.ticks(ticks);
 </script>
 
-<div class="axis y-axis" style="transform:translate(-{$padding.left}px, 0)">
+<div class="axis y-axis" style="transform:translate({0}px, 0)">
   <div
     class="axis-pointer"
     on:panmove|stopPropagation={onAxisDrag}
@@ -36,7 +36,7 @@
     <div
       class="tick tick-{i}"
       style="top:{$yScale(tick) +
-        (isBandwidth ? $yScale.bandwidth() / 2 : 0)}px;left:{$xRange[0]}%;"
+        (isBandwidth ? $yScale.bandwidth() / 2 : 0)}px;right:{$xRange[0]}%;"
     >
       {#if gridlines !== false}
         <div
@@ -58,8 +58,8 @@
         class="text"
         style="
 					top:{yTick - 3}px;
-					left:{isBandwidth
-          ? $padding.left + xTick
+					right:{isBandwidth
+          ? xTick - $padding.right
           : 0}px;
 					transform: translate({isBandwidth ? '-100%' : 0}, {isBandwidth
           ? -50 - Math.floor($yScale.bandwidth() / -2)
@@ -77,8 +77,9 @@
     width: 2rem;
     height: 100%;
     position: absolute;
+    right: 0;
     /* top: 100%; */
-    z-index: 99;
+    z-index: 9999;
     cursor: ns-resize;
   }
   .axis,
@@ -93,6 +94,7 @@
     height: 100%;
     z-index: 9;
     user-select: none;
+    z-index: 99;
   }
   .tick {
     font-size: 12px;

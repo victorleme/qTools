@@ -6,7 +6,7 @@
   import { getFormattedDataAndXDomain } from "../../data/data.utils";
   import { chartStore } from "../../store/chart/chart.store";
   import { isDrawing } from "../../store/paint/paint.store";
-  import CanvasWithSvg from "../../playground/CanvasWithSVG.svelte";
+  import Chart from "./Chart/Chart.svelte";
   let isDraw = false;
   let sinceDate = "2004-01";
   let untilDate = "2005-01";
@@ -41,8 +41,7 @@
     </div>
   </div>
   <div class="graph-chart">
-    <div class="main-chart"><CanvasWithSvg /></div>
-    <div class="aux-chart-1"><VolumeChart data={formattedData} /></div>
+    <div class="main-chart"><Chart /></div>
   </div>
 </div>
 

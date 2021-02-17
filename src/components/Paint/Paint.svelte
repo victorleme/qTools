@@ -90,9 +90,9 @@
 
 <style>
   #paint {
-    z-index: 999;
+    z-index: 50;
     position: absolute;
-    top: 0;
-    left: 0;
+    bottom: 5%;
+    left: 5%;
   }
 </style>

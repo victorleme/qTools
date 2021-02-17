@@ -26,10 +26,7 @@
   import { chartStore } from "../store/chart/chart.store";
   import { isDrawing } from "../store/paint/paint.store";
 
-  import { GREEN_PALLETE } from "../assets/candlesticks-colors/green.pallete";
-  import { RED_PALLETE } from "../assets/candlesticks-colors/red.pallete";
-
-  let padding = { left: 25, bottom: 25, right: 50 };
+  let padding = { left: 25, bottom: 25, right: 50, top: 0 };
   let chartContainerEl;
   let width, height;
   let yDomain = [];
@@ -190,11 +187,30 @@
   const onAxisYEnd = () => {
     isMovingAxis = false;
   };
+  const onDblclick = async () => {
+    let dataFromChartStore = [...$chartStore.data];
+    const response = await getFormattedDataAndXDomain({
+      data: dataAAPL,
+      sinceDate,
+      untilDate,
+    });
+    let xDomain = [...response.xDomain];
+    chartStore.setXDomain(xDomain);
+    yDomain =
+      dataFromChartStore.length > 0
+        ? [
+            d3.min(dataFromChartStore, (d) => d.low),
+            d3.max(dataFromChartStore, (d) => d.high),
+          ]
+        : [];
+    console.log("double click");
+  };
 </script>
 
 <div
   class="chart-container"
   use:dragChart
+  on:dblclick={onDblclick}
   bind:clientWidth={width}
   bind:clientHeight={height}
   bind:this={chartContainerEl}
@@ -212,12 +228,13 @@
     yScale={d3.scaleLinear()}
     xScale={d3.scaleTime()}
     xDomain={$chartStore.xDomain}
+    xRange={[0, width - padding.right]}
     xNice="true"
     {yDomain}
   >
     <Html>
       <AxisXHTML
-        formatTick={formatDateInTickX}
+        formatTick={() => ""}
         onAxisDrag={onAxisXDrag}
         onAxisDragEnd={onAxisXEnd}
       />
@@ -236,9 +253,7 @@
       {/if}
     </Html>
     <Canvas />
-    <Svg>
-      <DottedLine evt={evtMouseDotted} {padding} {width} {height} />
-    </Svg>
+    <Svg />
   </LayerCake>
 </div>
 
@@ -247,6 +262,7 @@
     cursor: pointer;
   }
   .chart-container {
+    overflow: hidden;
     cursor: crosshair;
     width: 100%;
     height: 100%;

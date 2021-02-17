@@ -4,7 +4,7 @@
   import * as d3 from "d3";
 
   import { sub, add, format, isFirstDayOfMonth } from "date-fns";
-  import AxisX from "../../assets/layercake-components/AxisX.svelte";
+  import AxisXHTML from "../../assets/layercake-components/AxisX.html.svelte";
   import AxisY from "../../assets/layercake-components/AxisY.svelte";
   import Volume from "../../assets/layercake-components/Volume.svelte";
   // This example loads csv data as json using @rollup/plugin-dsv
@@ -36,12 +36,12 @@
   // Raio - x:
 
   // Desenhar Régua:
-  let padding = { left: 25, bottom: 25, right: 50 };
+  let padding = { left: 25, bottom: 25, right: 50, top: 0 };
   let chartContainerEl;
   let xTicksVals = [];
   const xKey = "date";
   const yKey = "volume";
-
+  let isMovingAxis = false;
   let evt;
   let evtMouseDotted = evt;
 
@@ -86,6 +86,23 @@
         ? [d3.min(data, (d) => d.volume), d3.max(data, (d) => d.volume)]
         : [0, 1];
   });
+  const onAxisXDrag = (e) => {
+    isMovingAxis = true;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const step =
+      getDifferenceInMilliseconds(
+        $chartStore.xDomain[$chartStore.xDomain.length - 1],
+        $chartStore.xDomain[0]
+      ) / 7;
+    const dx = e.detail.dx;
+
+    changeDomain(dx, step);
+  };
+  const onAxisXEnd = () => {
+    isMovingAxis = false;
+  };
 </script>
 
 <div
@@ -113,9 +130,17 @@
   >
     <Svg>
       <Volume />
-      <AxisX formatTick={formatDateInTickX} setTicksVals={setXticksVals} />
+
       <AxisY formatTick={formatValueInTickY} />
     </Svg>
+    <Html>
+      <AxisXHTML
+        formatTick={formatDateInTickX}
+        setTicksVals={setXticksVals}
+        onAxisDrag={onAxisXDrag}
+        onAxisDragEnd={onAxisXEnd}
+      />
+    </Html>
   </LayerCake>
 </div>
 

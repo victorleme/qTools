@@ -33,7 +33,8 @@
     {#if gridlines !== false}
       <div
         class="gridline"
-        style="left:{$xScale(tick)}px;top: -{$padding.top}px;bottom: 0;"
+        style="left:{$xScale(tick) +
+          $padding.left}px;top: -{$padding.top}px;bottom: 0;"
       />
     {/if}
     <div
@@ -57,7 +58,7 @@
     height: 2rem;
     position: absolute;
     top: 100%;
-    z-index: 99;
+    z-index: 9999;
     cursor: ew-resize;
   }
   .axis,
@@ -65,6 +66,7 @@
   .gridline,
   .baseline {
     position: absolute;
+    z-index: 99;
   }
   .axis {
     width: 100%;
