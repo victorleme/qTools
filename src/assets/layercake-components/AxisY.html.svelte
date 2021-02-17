@@ -1,6 +1,7 @@
 <script>
+  import { getContext, onMount, createEventDispatcher } from "svelte";
+
   import dragChart from "../layercake-actions/drag-chart";
-  import { getContext } from "svelte";
 
   const { padding, xRange, xScale, yScale } = getContext("LayerCake");
 
@@ -12,6 +13,9 @@
   export let yTick = 2;
   export let onAxisDrag = () => {};
   export let onAxisDragEnd = () => {};
+
+  const dispatch = createEventDispatcher();
+  let axisY = null;
   // export let dxTick = 0;
   // export let dyTick = -4;
   // export let textAnchor = 'start';
@@ -23,11 +27,17 @@
     : isBandwidth
     ? $yScale.domain()
     : $yScale.ticks(ticks);
+  onMount(() => {
+    dispatch("mount", {
+      componentEl: axisY,
+    });
+  });
 </script>
 
 <div class="axis y-axis" style="transform:translate({0}px, 0)">
   <div
     class="axis-pointer"
+    bind:this={axisY}
     on:panmove|stopPropagation={onAxisDrag}
     on:panend={onAxisDragEnd}
     use:dragChart

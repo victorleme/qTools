@@ -1,5 +1,6 @@
 <script>
-  import { getContext } from "svelte";
+  import { getContext, onMount, createEventDispatcher } from "svelte";
+  import { chartStore } from "../../components/Graph/Chart/chart.store";
   import dragChart from "../layercake-actions/drag-chart";
   const { width, height, xScale, yScale, padding } = getContext("LayerCake");
 
@@ -13,6 +14,9 @@
   export let yTick = 7;
   export let dyTick = 0;
 
+  const dispatch = createEventDispatcher();
+  let axisX = null;
+
   $: isBandwidth = typeof $xScale.bandwidth === "function";
 
   $: tickVals = Array.isArray(ticks)
@@ -20,15 +24,16 @@
     : isBandwidth
     ? $xScale.domain()
     : $xScale.ticks(ticks);
+
+  onMount(() => {
+    dispatch("mount", {
+      componentEl: axisX,
+    });
+  });
 </script>
 
 <div class="axis x-axis" class:snapTicks>
-  <div
-    class="axis-pointer"
-    on:panmove|stopPropagation={onAxisDrag}
-    on:panend={onAxisDragEnd}
-    use:dragChart
-  />
+  <div bind:this={axisX} class="axis-pointer" use:dragChart />
   {#each tickVals as tick, i}
     {#if gridlines !== false}
       <div

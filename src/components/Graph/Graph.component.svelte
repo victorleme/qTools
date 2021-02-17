@@ -49,7 +49,6 @@
   .graph-chart {
     background-color: white;
     display: grid;
-    grid-template-rows: 5fr 1fr;
   }
   .asset-label {
     display: inline-block;

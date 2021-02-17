@@ -9,6 +9,7 @@
   import dataAAPL from "../../../data/AAPL.csv";
   import { getFormattedDataAndXDomain } from "../../../data/data.utils";
   import { chartStore } from "./chart.store";
+
   import {
     registerZoomsHandlers,
     registerMouseMoveHandlers,
@@ -21,6 +22,7 @@
     getDifferenceInMilliseconds,
     handlePanMove,
   } from "./chart.utils";
+
   let padding = { left: 25, bottom: 25, right: 50, top: 0 };
   let chartContainerEl;
   let width, height;
@@ -37,13 +39,13 @@
     console.log(chartContainerEl.clientWidth);
     registerZoomsHandlers(chartContainerEl, padding);
     registerMouseMoveHandlers(chartContainerEl);
-    registerUiHandlers(chartContainerEl);
+    registerUiHandlers(chartContainerEl, xLine, yLine);
     const { data, xDomain } = await getFormattedDataAndXDomain({
       data: dataAAPL,
       sinceDate,
       untilDate,
     });
-
+    chartStore.setContainerRef(chartContainerEl);
     chartStore.setXDomain(xDomain);
     chartStore.setData([...data]);
 
@@ -72,6 +74,9 @@
   });
 
   const onPanMove = (e) => {
+    if (e.target == yLine) return;
+    if (e.target == xLine) return;
+
     if (!$chartStore.isDragging) return;
     const step =
       getDifferenceInMilliseconds(

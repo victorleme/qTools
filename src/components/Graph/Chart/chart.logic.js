@@ -8,9 +8,15 @@ import {
   switchMap,
   takeUntil,
   mapTo,
+  tap,
 } from "rxjs/operators";
 import { chartStore } from "./chart.store";
-import { changeDomain, changeDomainCTRL } from "./chart.utils";
+import {
+  changeDomain,
+  changeDomainCTRL,
+  getDifferenceInMilliseconds,
+  handlePanMove,
+} from "./chart.utils";
 import * as d3 from "d3";
 export const registerMouseWheelZoom = (component) => {
   return fromEvent(component, "mousewheel").pipe(
@@ -69,14 +75,8 @@ export const registerMouseMoveHandlers = (component) => {
     chartStore.setMousePOS(pos);
   });
 };
-
-export const registerUiHandlers = (component) => {
-  const observer = {
-    next: (v) => console.log("pressed", v),
-    complete: () => console.log("completed"),
-  };
+export const createDragDropHandle = (component) => {
   const mouseup$ = fromEvent(component, "mouseup");
-
   const drag$ = fromEvent(component, "mousedown").pipe(
     switchMap(() =>
       interval(20).pipe(
@@ -89,8 +89,22 @@ export const registerUiHandlers = (component) => {
   const drop$ = drag$.pipe(
     switchMap(() => mouseup$.pipe(take(1), mapTo(false)))
   );
-  const dragdrop$ = merge(drag$, drop$);
-  dragdrop$.subscribe((isDragging) => {
+  return merge(drag$, drop$);
+};
+export const registerUiHandlers = (component, xLine, yLine) => {
+  const observer = {
+    next: (v) => console.log("pressed", v),
+    complete: () => console.log("completed"),
+  };
+  const mouseup$ = fromEvent(xLine, "click");
+  console.log(xLine);
+  mouseup$.subscribe(console.log);
+  const dragdropAxisX$ = createDragDropHandle(xLine);
+  const dragdropAxisY$ = createDragDropHandle(yLine);
+  dragdropAxisX$.pipe(tap()).subscribe(console.log);
+  dragdropAxisY$.subscribe(console.log);
+  const dragdropChart$ = createDragDropHandle(component);
+  dragdropChart$.subscribe((isDragging) => {
     chartStore.setIsDragging(isDragging);
   });
 };
