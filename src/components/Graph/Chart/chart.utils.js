@@ -72,6 +72,12 @@ export const filterDataByXDomain = ({ data = [], xDomain = [], xKey = "" }) => {
     return d[xKey] > xDomain[0] && d[xKey] < xDomain[1];
   });
 };
+export const changeDomainInAxisY = (delta = 0) => {
+  let newYDomain = [];
+  chartStore.subscribe((store) => {
+    newYDomain = [...store.yDomain];
+  });
+};
 export const changeDomain = (delta = 0, stepInMs = 0) => {
   let xDomainStore = [];
   let newXDomain = [];

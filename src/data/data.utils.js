@@ -55,3 +55,6 @@ export const getFormattedDataAndXDomain = async ({
 
   return { data: formattedData, xDomain: xDomain };
 };
+export const getXDomainFromData = (data, xKey = "date") => {
+  return getDomainOfDateRange({ data, key: xKey });
+};

@@ -1,4 +1,4 @@
-import { fromEvent, interval, merge } from "rxjs";
+import { fromEvent, interval, merge, iif } from "rxjs";
 import {
   distinctUntilChanged,
   filter,
@@ -8,7 +8,9 @@ import {
   switchMap,
   takeUntil,
   mapTo,
+  concatMap,
   tap,
+  last,
 } from "rxjs/operators";
 import { chartStore } from "./chart.store";
 import {
@@ -25,7 +27,10 @@ export const registerMouseWheelZoom = (component) => {
     map((value) => value / Math.abs(value))
   );
 };
-const getStepForZoom = () => {
+export const getStepForZoomAxis = (domain = [0, 0]) => {
+  return (domain[1] - domain[0]) / 20;
+};
+export const getStepForZoom = () => {
   let xDomain = [];
   chartStore.subscribe(($chartStore) => (xDomain = $chartStore.xDomain));
   return (xDomain[1] - xDomain[0]) / 20;
@@ -76,7 +81,7 @@ export const registerMouseMoveHandlers = (component) => {
   });
 };
 export const createDragDropHandle = (component) => {
-  const mouseup$ = fromEvent(component, "mouseup");
+  const mouseup$ = fromEvent(document, "mouseup");
   const drag$ = fromEvent(component, "mousedown").pipe(
     switchMap(() =>
       interval(20).pipe(
@@ -91,20 +96,34 @@ export const createDragDropHandle = (component) => {
   );
   return merge(drag$, drop$);
 };
-export const registerUiHandlers = (component, xLine, yLine) => {
+export const registerUiHandlers = (component, axisX, axisY) => {
   const observer = {
     next: (v) => console.log("pressed", v),
     complete: () => console.log("completed"),
   };
-  const mouseup$ = fromEvent(xLine, "click");
-  console.log(xLine);
-  mouseup$.subscribe(console.log);
-  const dragdropAxisX$ = createDragDropHandle(xLine);
-  const dragdropAxisY$ = createDragDropHandle(yLine);
-  dragdropAxisX$.pipe(tap()).subscribe(console.log);
-  dragdropAxisY$.subscribe(console.log);
+
+  const dragdropAxisX$ = createDragDropHandle(axisX);
+  const dragdropAxisY$ = createDragDropHandle(axisY);
+  dragdropAxisX$.pipe(tap()).subscribe((value) => console.log("axis X", value));
+  dragdropAxisY$.subscribe((value) => console.log("axis Y", value));
   const dragdropChart$ = createDragDropHandle(component);
-  dragdropChart$.subscribe((isDragging) => {
-    chartStore.setIsDragging(isDragging);
+  const dragdropChartGuard$ = dragdropChart$.subscribe((isDragging) => {
+    let isDraggingY = false;
+    let isDraggingX = false;
+    chartStore.subscribe(($chartStore) => {
+      isDraggingX = $chartStore.isDraggingAxisX;
+      isDraggingY = $chartStore.isDraggingAxisY;
+    });
+    let isDraggingChart = isDragging && !isDraggingY & !isDraggingX;
+
+    chartStore.setIsDragging(!!isDraggingChart);
+  });
+  const dragdropAxisXGuard$ = dragdropAxisX$.subscribe((isDragging) => {
+    console.log();
+
+    chartStore.setIsDraggingAxisX(isDragging);
+  });
+  const dragdropAxisYGuard$ = dragdropAxisY$.subscribe((isDragging) => {
+    chartStore.setIsDraggingAxisY(isDragging);
   });
 };

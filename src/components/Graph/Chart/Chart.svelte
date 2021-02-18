@@ -1,28 +1,37 @@
 <script>
   import { onMount } from "svelte";
   import { LayerCake, Svg, Canvas, Html } from "layercake";
-
+  import { isWithinInterval } from "date-fns";
   import * as d3 from "d3";
-  import Grid from "../Grid.svelte";
+
   import CandlestickCanvas from "../../../assets/layercake-components/Candlestick.canvas.svelte";
   import dragChart from "../../../assets/layercake-actions/drag-chart";
   import dataAAPL from "../../../data/AAPL.csv";
-  import { getFormattedDataAndXDomain } from "../../../data/data.utils";
-  import { chartStore } from "./chart.store";
-
   import {
+    getFormattedDataAndXDomain,
+    getXDomainFromData,
+  } from "../../../data/data.utils";
+  import { chartStore } from "./chart.store";
+  import AxisXHTML from "../../../assets/layercake-components/AxisX.html.svelte";
+  import AxisYHTML from "../../../assets/layercake-components/AxisY.html.svelte";
+  import {
+    getStepForZoomAxis,
+    getStepForZoom,
     registerZoomsHandlers,
     registerMouseMoveHandlers,
     registerUiHandlers,
   } from "./chart.logic";
 
   import {
+    changeDomain,
     getColor,
     getColorHex,
     getDifferenceInMilliseconds,
     handlePanMove,
+    formatDateInTickX,
   } from "./chart.utils";
-
+  let axisX = null;
+  let axisY = null;
   let padding = { left: 25, bottom: 25, right: 50, top: 0 };
   let chartContainerEl;
   let width, height;
@@ -34,12 +43,25 @@
   let xLine = null;
   let yLine = null;
   let data = [];
-
+  const rescaleDomainY = () => {
+    let filteredData = data.filter((d) =>
+      isWithinInterval(d[xKey], {
+        start: $chartStore.xDomain[0],
+        end: $chartStore.xDomain[1],
+      })
+    );
+    yDomain = [
+      ...[
+        d3.min(filteredData, (d) => d.low),
+        d3.max(filteredData, (d) => d.high),
+      ],
+    ];
+  };
   onMount(async () => {
     console.log(chartContainerEl.clientWidth);
     registerZoomsHandlers(chartContainerEl, padding);
     registerMouseMoveHandlers(chartContainerEl);
-    registerUiHandlers(chartContainerEl, xLine, yLine);
+    registerUiHandlers(chartContainerEl, axisX, axisY);
     const { data, xDomain } = await getFormattedDataAndXDomain({
       data: dataAAPL,
       sinceDate,
@@ -74,16 +96,47 @@
   });
 
   const onPanMove = (e) => {
+    const { detail } = e;
     if (e.target == yLine) return;
     if (e.target == xLine) return;
 
-    if (!$chartStore.isDragging) return;
-    const step =
-      getDifferenceInMilliseconds(
-        $chartStore.xDomain[$chartStore.xDomain.length - 1],
-        $chartStore.xDomain[0]
-      ) / 20;
-    handlePanMove(e, step);
+    if ($chartStore.isDragging) {
+      const step =
+        getDifferenceInMilliseconds(
+          $chartStore.xDomain[$chartStore.xDomain.length - 1],
+          $chartStore.xDomain[0]
+        ) / 20;
+      handlePanMove(e, step);
+      rescaleDomainY();
+      return;
+    }
+    if ($chartStore.isDraggingAxisX) {
+      const dx = detail.dx;
+
+      const step = getStepForZoom();
+      changeDomain(dx, step * 5);
+      return;
+    }
+    if ($chartStore.isDraggingAxisY) {
+      const dy = detail.dy;
+      const step = getStepForZoomAxis(yDomain) * 2.5;
+      if (dy > 0) {
+        yDomain = [...[yDomain[0] - step, yDomain[1] + step]];
+      }
+      if (dy < 0) {
+        yDomain = [...[yDomain[0] + step, yDomain[1] - step]];
+      }
+
+      return;
+    }
+  };
+
+  const resetZoom = () => {
+    let $data = [...$chartStore.data];
+    yDomain = [...[d3.min($data, (d) => d.low), d3.max($data, (d) => d.high)]];
+
+    let xDomain = getXDomainFromData($data);
+    chartStore.setXDomain(xDomain);
   };
 </script>
 
@@ -94,11 +147,13 @@
   bind:this={chartContainerEl}
   use:dragChart
   on:panmove={onPanMove}
+  on:dblclick={resetZoom}
   on:mousewheel={(e) => e.preventDefault()}
   class:draggable={$chartStore.isDragging}
 >
   <div class="mouse-pos">
     X: {$chartStore.mousePOS.X} Y: {$chartStore.mousePOS.Y} isDragging:{$chartStore.isDragging}
+    isDraggingAxisX:{$chartStore.isDraggingAxisX} isDraggingAxisY:{$chartStore.isDraggingAxisY}
   </div>
 
   <LayerCake
@@ -113,10 +168,18 @@
     xNice="true"
     {yDomain}
   >
-    <Grid />
     <Canvas>
       <CandlestickCanvas />
     </Canvas>
+    <Html>
+      <AxisXHTML
+        formatTick={formatDateInTickX}
+        on:mount={({ detail: { componentEl } }) => (axisX = componentEl)}
+      />
+      <AxisYHTML
+        on:mount={({ detail: { componentEl } }) => (axisY = componentEl)}
+      />
+    </Html>
     <Html>
       <div class="x-line" bind:this={xLine} />
       <div class="y-line" bind:this={yLine} />
